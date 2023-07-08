@@ -5,6 +5,9 @@ import scala.util.matching.Regex
 abstract class Token(val value: String)
 case class StartToken(override val value: String) extends Token(value)
 case class EndToken(override val value: String) extends Token(value)
+case class LeftArrowToken(override val value: String) extends Token(value)
+case class RightArrowToken(override val value: String) extends Token(value)
+case class ElementValueToken(override val value: String) extends Token(value)
 class TokenGenerator[T <: Token](val pattern: Regex, val create: String => T) {
   def createToken(input: String): Option[T] = {
     pattern.findFirstIn(input).map(create)
@@ -14,7 +17,10 @@ class TokenGenerator[T <: Token](val pattern: Regex, val create: String => T) {
 class TokenGenerators {
   private val generators: List[TokenGenerator[_ <: Token]] = List(
     new TokenGenerator[StartToken](new Regex("^@startuml"), StartToken.apply),
-    new TokenGenerator[EndToken](new Regex("^@enduml"), EndToken.apply)
+    new TokenGenerator[LeftArrowToken](new Regex("^[<o*][|.-]?[.-]*(up|down|left|right)?[.-]+"), LeftArrowToken.apply),
+    new TokenGenerator[RightArrowToken](new Regex("^[.-]+(up|down|left|right)?[.-]*[|.-]?[*o>]"), RightArrowToken.apply),
+    new TokenGenerator[EndToken](new Regex("^@enduml"), EndToken.apply),
+    new TokenGenerator[ElementValueToken](new Regex("^[^\\s\\n\\r\\t<o*.|-]*"), ElementValueToken.apply)
   )
 
   def createToken(input: String): Option[Token] = {
