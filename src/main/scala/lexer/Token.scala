@@ -124,6 +124,12 @@ object ProtectedVisibilityToken {
   val regex: Regex = "^#".r
 }
 
+case class ColonToken(override val value: String) extends Token(value)
+
+object ColonToken {
+  val regex: Regex = "^:".r
+}
+
 case class ElementValueToken(override val value: String) extends Token(value)
 
 object ElementValueToken {
