@@ -123,15 +123,10 @@ object Tokenizer {
     tokenizeInternal(input, List()).reverse
   }
 
-  @tailrec
   private def tokenizeInternal(input: String, tokens: List[Token]): List[Token] = {
     val strippedInput = input.dropWhile(c => List(' ', '\n', '\r', '\t').contains(c))
-    strippedInput match {
-      case "" => tokens
-      case _ => tokenGenerators.createToken(strippedInput) match {
-        case Some(token) => tokenizeInternal(dropSubstring(strippedInput, token.value), token :: tokens)
-        case None => tokens
-      }
+    tokenGenerators.createToken(strippedInput).fold(tokens) { token =>
+      tokenizeInternal(dropSubstring(strippedInput, token.value), token :: tokens)
     }
   }
 
