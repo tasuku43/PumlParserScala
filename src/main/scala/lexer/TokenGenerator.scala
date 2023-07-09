@@ -3,7 +3,7 @@ package lexer
 import scala.annotation.tailrec
 import scala.util.matching.Regex
 
-trait TokenGenerator[T <: Token] {
+sealed trait TokenGenerator[T <: Token] {
   def createToken(input: String): Option[T]
 }
 

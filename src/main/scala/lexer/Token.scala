@@ -2,7 +2,7 @@ package lexer
 
 import scala.util.matching.Regex
 
-abstract class Token(val value: String)
+sealed abstract class Token(val value: String)
 
 case class StartToken(override val value: String) extends Token(value)
 
