@@ -56,6 +56,7 @@ object TokenGenerators {
     new DirectMatchTokenGenerator[PrivateVisibilityToken](PrivateVisibilityToken.regex, PrivateVisibilityToken.apply),
     new DirectMatchTokenGenerator[PublicVisibilityToken](PublicVisibilityToken.regex, PublicVisibilityToken.apply),
     new DirectMatchTokenGenerator[ProtectedVisibilityToken](ProtectedVisibilityToken.regex, ProtectedVisibilityToken.apply),
+    new DirectMatchTokenGenerator[ColonToken](ColonToken.regex, ColonToken.apply),
     new UpToPatternTokenGenerator[ElementValueToken](ElementValueToken.tokenEndPatterns, ElementValueToken.apply)
   ))
 }
