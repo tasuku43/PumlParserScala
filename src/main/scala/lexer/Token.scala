@@ -145,7 +145,7 @@ object ElementValueToken {
     "^\\(".r,
     "^\\)".r,
     "^:".r,
-    "^[<o*][|.-]?[.-]*(up|down|left|right)?[.-]+".r,
-    "^[.-]+(up|down|left|right)?[.-]*[|.-]?[*o>]".r,
+    RightArrowToken.regex,
+    LeftArrowToken.regex,
   )
 }
