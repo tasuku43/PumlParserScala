@@ -10,6 +10,14 @@ sealed trait Node {
   def name: String
 }
 
+sealed trait ClassExtendable {
+  def extend(parent: ClassNode | AbstractClassNode): ClassNode | AbstractClassNode
+}
+
+sealed trait Implementable {
+  def implement(interface: InterfaceNode): ClassNode | AbstractClassNode
+}
+
 case class Nodes(nodes: Seq[Node] = Seq.empty) {
   def add(node: Node): Nodes = Nodes(nodes :+ node)
 
@@ -37,7 +45,7 @@ case class ClassNode(
   name: String,
   parent: Option[ClassNode | AbstractClassNode] = None,
   interfaces: Seq[InterfaceNode] = Seq.empty
-) extends Node {
+) extends Node with ClassExtendable with Implementable {
   def extend(parent: ClassNode | AbstractClassNode): ClassNode = this.copy(parent = Some(parent))
 
   def implement(interface: InterfaceNode): ClassNode = this.copy(interfaces = this.interfaces :+ interface)
@@ -47,7 +55,7 @@ case class AbstractClassNode(
   name: String,
   parent: Option[ClassNode | AbstractClassNode] = None,
   interfaces: Seq[InterfaceNode] = Seq.empty
-) extends Node {
+) extends Node with ClassExtendable with Implementable {
   def extend(parent: ClassNode | AbstractClassNode): AbstractClassNode = this.copy(parent = Some(parent))
 
   def implement(interface: InterfaceNode): AbstractClassNode = this.copy(interfaces = this.interfaces :+ interface)
