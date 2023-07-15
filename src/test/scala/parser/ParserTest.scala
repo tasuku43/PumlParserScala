@@ -11,6 +11,7 @@ class ParserTest extends AnyFunSuite:
         |package Lexer {
         |    interface Tokenizeable
         |    package Lexer/Arrow {
+        |        abstract class ArrowTokenizer implements Tokenizeable
         |        class LeftArrowTokenizer extends ArrowTokenizer {
         |            + publicProperty : array
         |            # protectedProperty
@@ -40,7 +41,12 @@ class ParserTest extends AnyFunSuite:
       PackageNode("Lexer", Nodes(Seq(
         InterfaceNode("Tokenizeable"),
         PackageNode("Lexer/Arrow", Nodes(Seq(
-          ClassNode("LeftArrowTokenizer")
+          AbstractClassNode("ArrowTokenizer", parent = None, interfaces = Seq(
+            InterfaceNode("Tokenizeable")
+          )),
+          ClassNode("LeftArrowTokenizer", Some(AbstractClassNode("ArrowTokenizer", interfaces = Seq(
+            InterfaceNode("Tokenizeable")
+          ))))
         ))),
         PackageNode("Lexer/CurlyBracket", Nodes(Seq(
           AbstractClassNode("CurlyBracketTokenizer"),
