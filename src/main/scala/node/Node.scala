@@ -12,6 +12,14 @@ sealed trait Node {
 
 case class Nodes(nodes: Seq[Node] = Seq.empty) {
   def add(node: Node): Nodes = Nodes(nodes :+ node)
+
+  def findFirst[T <: Node](name: String)(implicit tag: reflect.ClassTag[T]): Option[T] = {
+    nodes.flatMap {
+      case t: T if t.name == name => Some(t)
+      case p: PackageNode => p.children.findFirst[T](name)
+      case _ => None
+    }.headOption
+  }
 }
 
 case class PackageNode(name: String, children: Nodes = Nodes()) extends Node {
