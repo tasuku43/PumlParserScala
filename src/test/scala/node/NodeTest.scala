@@ -30,3 +30,23 @@ class NodeTest extends AnyFunSuite:
     nodes.findFirst[AbstractClassNode]("NonexistentNode") should be(None)
     nodes.findFirst[EnumNode]("NonexistentNode") should be(None)
   }
+
+  test("node.NodeReplacer.visit") {
+    val nodes = Nodes(Seq(
+      PackageNode("Lexer", Nodes(Seq(
+        InterfaceNode("Tokenizeable"),
+        PackageNode("Lexer/Arrow", Nodes(Seq(
+          ClassNode("LeftArrowTokenizer")
+        ))),
+        PackageNode("Lexer/CurlyBracket", Nodes(Seq(
+          AbstractClassNode("CurlyBracketTokenizer"),
+          ClassNode("OpenCurlyBracketToken")
+        ))),
+        EnumNode("Enum"),
+      ))),
+    ))
+
+    val replacer = new NodeReplacer(ClassNode("LeftArrowTokenizer"), ClassNode("Hoge"))
+    val replacedNodes = nodes.accept(replacer)
+    println(replacedNodes)
+  }

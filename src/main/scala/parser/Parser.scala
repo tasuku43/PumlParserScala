@@ -1,7 +1,7 @@
 package parser
 
-import lexer.{AbstractClassToken, ClassToken, CloseCurlyBracketToken, ElementValueToken, EnumToken, ExtendsToken, ImplementsToken, InterfaceToken, OpenCurlyBracketToken, PackageToken, StartToken, Token}
-import node.{Implementable, ClassExtendable, AbstractClassNode, ClassNode, EnumNode, InterfaceNode, Node, Nodes, PackageNode}
+import lexer.{AbstractClassToken, ClassToken, CloseCurlyBracketToken, ElementValueToken, EnumToken, ExtendsToken, ImplementsToken, InterfaceToken, LeftArrowToken, OpenCurlyBracketToken, PackageToken, RightArrowToken, StartToken, Token}
+import node.{ClassLikeNode, AbstractClassNode, ClassNode, EnumNode, InterfaceNode, Node, NodeReplacer, Nodes, PackageNode}
 
 import scala.annotation.tailrec
 
@@ -17,6 +17,20 @@ object Parser {
       case AbstractClassToken(_) :: rest => parseClassNode(rest, scopeNodes, allNodes, AbstractClassNode.apply(_))
       case InterfaceToken(_) :: rest => parseInterfaceNode(rest, scopeNodes, allNodes)
       case EnumToken(_) :: rest => parseEnumNode(rest, scopeNodes, allNodes)
+      case ElementValueToken(parentName) :: LeftArrowToken(arrow) :: ElementValueToken(childName) :: rest =>
+        arrow match
+          case a if a.contains("<|") && a.contains(".") =>
+            parseImplement(childName, parentName, rest, scopeNodes, allNodes)
+          case a if a.contains("<|") && a.contains("-") =>
+            parseExtend(childName, parentName, rest, scopeNodes, allNodes)
+          case _ => parse(rest, scopeNodes, allNodes)
+      case ElementValueToken(childName) :: RightArrowToken(arrow) :: ElementValueToken(parentName) :: rest =>
+        arrow match
+          case a if a.contains(".") && a.contains("|>") =>
+            parseImplement(childName, parentName, rest, scopeNodes, allNodes)
+          case a if a.contains("-") && a.contains("|>") =>
+            parseExtend(childName, parentName, rest, scopeNodes, allNodes)
+          case _ => parse(rest, scopeNodes, allNodes)
       case _ => scopeNodes
     }
   }
@@ -33,7 +47,7 @@ object Parser {
   }
 
   private def parseClassNode(
-    tokens: List[Token], scopeNodes: Nodes, allNodes: Nodes, nodeMaker: String => ClassExtendable & Implementable & Node
+    tokens: List[Token], scopeNodes: Nodes, allNodes: Nodes, nodeMaker: String => ClassLikeNode
   ): Nodes = {
     tokens match {
       case ElementValueToken(name) :: ExtendsToken(_) :: ElementValueToken(parentName) :: rest =>
@@ -91,6 +105,33 @@ object Parser {
         parse(rest, scopeNodes.add(InterfaceNode(name)), allNodes.add(InterfaceNode(name)))
       case _ => allNodes
     }
+  }
+
+  private def parseImplement(targetName: String, interfaceName: String, tokens: List[_ <: Token], scopeNodes: Nodes, allNodes: Nodes) = {
+    val targetNode = allNodes.findFirst[ClassLikeNode](targetName) match
+      case Some(target) => target
+      case None => throw new Exception(s"Target $targetName not found")
+    val interfaceNode = allNodes.findFirst[InterfaceNode](interfaceName) match
+      case Some(target) => target
+      case None => throw new Exception(s"Target $targetName not found")
+    val visitor = NodeReplacer(targetNode, targetNode.implement(interfaceNode))
+    val n = allNodes.accept(visitor)
+    parse(tokens, scopeNodes.accept(visitor), allNodes.accept(visitor))
+  }
+
+  private def parseExtend(targetName: String, superclassName: String, tokens: List[_ <: Token], scopeNodes: Nodes, allNodes: Nodes) = {
+    val targetNode = allNodes.findFirst[ClassLikeNode | InterfaceNode](targetName) match
+      case Some(target) => target
+      case None => throw new Exception(s"Target $targetName not found")
+    val parentNode = allNodes.findFirst[ClassLikeNode | InterfaceNode](superclassName) match
+      case Some(target) => target
+      case None => throw new Exception(s"Target $targetName not found")
+    val visitor = NodeReplacer(targetNode, (targetNode, parentNode) match
+      case (t: ClassLikeNode, p: ClassLikeNode) => t.extend(p)
+      case (t: InterfaceNode, p: InterfaceNode) => t.extend(p)
+      case _ => throw new Exception("Invalid extend")
+    )
+    parse(tokens, scopeNodes.accept(visitor), allNodes.accept(visitor))
   }
 
   @tailrec

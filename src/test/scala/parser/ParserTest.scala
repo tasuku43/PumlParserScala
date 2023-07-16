@@ -10,6 +10,7 @@ class ParserTest extends AnyFunSuite:
       """@startuml
         |package Lexer {
         |    interface Tokenizeable
+        |    interface Tokenizeable2
         |    package Lexer/Arrow {
         |        abstract class ArrowTokenizer implements Tokenizeable
         |        class LeftArrowTokenizer extends ArrowTokenizer {
@@ -30,8 +31,6 @@ class ParserTest extends AnyFunSuite:
         |      CASE2
         |      CASE3
         |    }
-        |
-        |    NoneDefinitionClass ..|> Tokenizeable
         |}
         |@enduml""".stripMargin
 
@@ -49,12 +48,15 @@ class ParserTest extends AnyFunSuite:
           ))))
         ))),
         PackageNode("Lexer/CurlyBracket", Nodes(Seq(
-          AbstractClassNode("CurlyBracketTokenizer"),
-          ClassNode("OpenCurlyBracketToken")
+          AbstractClassNode("CurlyBracketTokenizer", parent = None, interfaces = Seq(
+            InterfaceNode("Tokenizeable")
+          )),
+          ClassNode("OpenCurlyBracketToken", parent = Some(AbstractClassNode("CurlyBracketTokenizer", parent = None, interfaces = Seq(
+            InterfaceNode("Tokenizeable")
+          ))))
         ))),
         EnumNode("Enum"),
       ))),
     ))
     assert(ast == expected)
   }
-
