@@ -10,7 +10,6 @@ class ParserTest extends AnyFunSuite:
       """@startuml
         |package Lexer {
         |    interface Tokenizeable
-        |    interface Tokenizeable2
         |    package Lexer/Arrow {
         |        abstract class ArrowTokenizer implements Tokenizeable
         |        class LeftArrowTokenizer extends ArrowTokenizer {
